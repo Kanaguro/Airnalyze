@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Scan History</div>
+    <div class="page-subtitle">Log of all network scans</div>
+  </div>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>#</th><th>Scanned At</th><th>Devices Found</th></tr></thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td class="td-mono">{{ log.id }}</td>
+        <td>{{ log.scanned_at }}</td>
+        <td><span class="badge badge-active">{{ log.device_count }}</span></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3"><div class="empty-state"><i class="bi bi-clock-history"></i>No scans yet</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

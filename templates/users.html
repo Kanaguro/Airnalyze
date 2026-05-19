@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">User Management</div>
+    <div class="page-subtitle">Manage registered accounts</div>
+  </div>
+  <a href="{{ url_for('register') }}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Add Account</a>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>Username</th><th>Account Type</th><th>Last Login</th><th>User ID</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>
+          {% if u.account_type == 'admin' %}<span class="badge badge-admin">Admin</span>
+          {% else %}<span class="badge badge-guest">Guest</span>{% endif %}
+        </td>
+        <td style="font-family:var(--mono);font-size:.78rem;color:var(--text2);">{{ u.last_login or '—' }}</td>
+        <td><code style="font-size:.7rem;">{{ u.user_id[:16] }}...</code></td>
+        <td>
+          {% if u.user_id != current_user.id %}
+          <form method="POST" action="{{ url_for('delete_user', user_id=u.user_id) }}"
+                onsubmit="return confirm('Delete user {{ u.username }}?')">
+            <button class="btn btn-danger-soft btn-sm"><i class="bi bi-trash"></i> Delete</button>
+          </form>
+          {% else %}
+          <span style="font-size:.75rem;color:var(--text3);">You</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

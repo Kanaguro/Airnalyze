@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-people text-info"></i> Login Sessions</h4>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead><tr><th>Guest ID</th><th>Session Token</th><th>Last Accessed</th></tr></thead>
+      <tbody>
+        {% for g in guests %}
+        <tr>
+          <td><code style="font-size:.75rem;">{{ g.guest_id }}</code></td>
+          <td><code style="font-size:.75rem;">{{ g.session_token[:16] }}...</code></td>
+          <td>{{ g.last_accessed }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-center text-muted py-4">No sessions recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

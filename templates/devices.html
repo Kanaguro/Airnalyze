@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Devices</div>
+    <div class="page-subtitle">Detected devices on the network</div>
+  </div>
+  <div class="d-flex" style="gap:8px;">
+    <a href="{{ url_for('scan') }}" class="btn btn-primary"><i class="bi bi-radar"></i> Rescan</a>
+    <button class="btn btn-outline" onclick="toggleSelect()"><i class="bi bi-check2-square"></i> Select</button>
+  </div>
+</div>
+
+<!-- Search bar -->
+<div style="margin-bottom:14px;">
+  <input type="text" id="device-search" class="form-control" placeholder="Search by MAC, IP, or device name..." oninput="filterDevices()" style="max-width:400px;">
+</div>
+
+<form method="POST" action="{{ url_for('bulk_action') }}" id="bulk-form">
+<div class="card">
+  <table id="devices-table">
+    <thead>
+      <tr>
+        <th class="select-col" style="display:none;width:36px;"><input type="checkbox" id="select-all" onchange="toggleAll(this)"></th>
+        <th>MAC Address</th><th>IP Address</th><th>Device Name</th><th>Note</th><th>Signal</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="devices-body">
+      {% for d in devices %}
+      <tr class="device-row" data-search="{{ d.mac_address }} {{ d.ip_address }} {{ d.device_name }}">
+        <td class="select-col" style="display:none;">
+          <input type="checkbox" name="macs" value="{{ d.mac_address }}">
+        </td>
+        <td class="td-mono">{{ d.mac_address }}</td>
+        <td class="td-ip">{{ d.ip_address or '—' }}</td>
+        <td>{{ d.device_name or 'Unknown' }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;min-width:0;">
+              {% if notes.get(d.mac_address) %}
+                <div class="note-text" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ notes.get(d.mac_address) }}</div>
+              {% else %}
+                <div class="note-empty" style="color:var(--text3);font-size:.75rem;">No note</div>
+              {% endif %}
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="toggleNoteForm('{{ d.mac_address }}')">
+              {% if notes.get(d.mac_address) %}Edit{% else %}Add{% endif %}
+            </button>
+          </div>
+          <div class="note-form" id="note-{{ d.mac_address }}" data-action="{{ url_for('save_note', mac=d.mac_address) }}" style="display:none;margin-top:6px;">
+            <div style="display:flex;gap:6px;width:100%;">
+              <input type="text" name="note" class="form-control" value="{{ notes.get(d.mac_address, '') }}"
+                     placeholder="Add a note..." style="font-size:.78rem;padding:6px 8px;flex:1;min-width:0;">
+              <button class="btn btn-primary btn-sm save-note" type="button" data-mac="{{ d.mac_address }}">Save</button>
+              <button class="btn btn-outline btn-sm" type="button" onclick="hideNoteForm('{{ d.mac_address }}')">Cancel</button>
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--text2);font-family:var(--mono);font-size:.75rem;">{{ d.signal_strength or '—' }}</td>
+        <td>
+          {% if d.mac_address in wl_macs %}<span class="badge badge-trusted">Trusted</span>
+          {% elif d.mac_address in bl_macs %}<span class="badge badge-blocked">Blocked</span>
+          {% else %}<span class="badge badge-active">Active</span>{% endif %}
+        </td>
+        <td>
+          <div class="d-flex" style="gap:4px;flex-wrap:wrap;">
+            {% if d.mac_address not in bl_macs %}
+            <a href="{{ url_for('block_device', mac=d.mac_address, ip=d.ip_address, name=d.device_name) }}"
+               class="btn btn-danger-soft btn-sm" onclick="return confirm('Block {{ d.mac_address }}?')">
+              <i class="bi bi-slash-circle"></i> Block
+            </a>
+            {% else %}
+            <a href="{{ url_for('unblock_device', mac=d.mac_address) }}?from=devices"
+               class="btn btn-outline btn-sm">
+              <i class="bi bi-arrow-counterclockwise"></i> Unblock
+            </a>
+            {% endif %}
+            {% if d.mac_address not in wl_macs %}
+            <a href="{{ url_for('trust_device', mac=d.mac_address, ip=d.ip_address, name=d.device_name) }}"
+               class="btn btn-success-soft btn-sm">
+              <i class="bi bi-patch-check"></i> Trust
+            </a>
+            {% else %}
+            <a href="{{ url_for('untrust_device', mac=d.mac_address) }}?from=devices"
+               class="btn btn-outline btn-sm">
+              <i class="bi bi-x-circle"></i> Untrust
+            </a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8"><div class="empty-state"><i class="bi bi-radar"></i>No devices detected — <a href="{{ url_for('scan') }}" style="color:var(--accent);">run a scan</a></div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Bulk action bar -->
+<div id="bulk-bar" style="display:none;margin-top:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:none;align-items:center;gap:10px;">
+  <span id="selected-count" style="font-family:var(--mono);font-size:.8rem;color:var(--text2);">0 selected</span>
+  <button type="submit" name="action" value="block" class="btn btn-danger-soft btn-sm"
+          onclick="return confirm('Block selected devices?')"><i class="bi bi-slash-circle"></i> Block Selected</button>
+  <button type="submit" name="action" value="trust" class="btn btn-success-soft btn-sm">
+          <i class="bi bi-patch-check"></i> Trust Selected</button>
+</div>
+</form>
+
+<!-- Auto-refresh -->
+<div style="margin-top:14px;display:flex;align-items:center;gap:10px;">
+  <label style="font-size:.78rem;color:var(--text2);font-family:var(--mono);display:flex;align-items:center;gap:6px;">
+    <input type="checkbox" id="auto-refresh" onchange="toggleAutoRefresh(this)"> Auto-refresh
+  </label>
+  <span id="refresh-countdown" style="font-size:.75rem;color:var(--text3);font-family:var(--mono);"></span>
+</div>
+
+<script>
+let selectMode = false;
+let refreshTimer = null;
+let countdown = 30;
+
+function toggleSelect() {
+  selectMode = !selectMode;
+  document.querySelectorAll('.select-col').forEach(el => el.style.display = selectMode ? '' : 'none');
+  document.getElementById('bulk-bar').style.display = selectMode ? 'flex' : 'none';
+}
+
+function toggleAll(cb) {
+  document.querySelectorAll('input[name="macs"]').forEach(c => c.checked = cb.checked);
+  updateCount();
+}
+
+function updateCount() {
+  const n = document.querySelectorAll('input[name="macs"]:checked').length;
+  document.getElementById('selected-count').textContent = n + ' selected';
+}
+
+document.addEventListener('change', e => { if (e.target.name === 'macs') updateCount(); });
+
+function filterDevices() {
+  const q = document.getElementById('device-search').value.toLowerCase();
+  document.querySelectorAll('.device-row').forEach(row => {
+    row.style.display = row.dataset.search.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function showNoteForm(mac) {
+  const f = document.getElementById('note-' + mac);
+  if (f) f.style.display = 'block';
+}
+function toggleNoteForm(mac) {
+  const f = document.getElementById('note-' + mac);
+  if (!f) return;
+  const isVisible = f.style.display === 'flex' || f.style.display === 'block';
+  // show as a full-width bar
+  if (!isVisible) {
+    f.style.display = 'flex';
+    f.style.width = '100%';
+    f.style.marginTop = '6px';
+    f.style.alignItems = 'center';
+    const inp = f.querySelector('input[name="note"]'); if (inp) { inp.focus(); inp.select(); }
+  } else {
+    f.style.display = 'none';
+  }
+}
+
+// Intercept note form submissions to use AJAX so the outer bulk form is not submitted.
+// Handle Save clicks on note bars (avoids nested form submission inside bulk form)
+document.addEventListener('click', async function(e) {
+  const btn = e.target.closest('.save-note');
+  if (!btn) return;
+  e.preventDefault();
+  const mac = btn.dataset.mac;
+  const bar = document.getElementById('note-' + mac);
+  if (!bar) return;
+  const action = bar.dataset.action;
+  const input = bar.querySelector('input[name="note"]');
+  const val = input ? input.value.trim() : '';
+  try {
+    const body = new URLSearchParams(); body.append('note', val);
+    const res = await fetch(action, { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
+    if (!res.ok) throw new Error('Network error');
+    const cell = bar.closest('td');
+    if (cell) {
+      let textEl = cell.querySelector('.note-text');
+      const emptyEl = cell.querySelector('.note-empty');
+      if (val) {
+        if (textEl) textEl.textContent = val;
+        else {
+          textEl = document.createElement('div'); textEl.className='note-text'; textEl.textContent=val;
+          if (emptyEl) emptyEl.replaceWith(textEl);
+          else cell.insertBefore(textEl, bar);
+        }
+        if (emptyEl) emptyEl.style.display = 'none';
+      } else {
+        if (textEl) textEl.textContent = '';
+        if (emptyEl) emptyEl.style.display = '';
+      }
+    }
+    bar.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+    alert('Could not save note.');
+  }
+});
+
+function toggleAutoRefresh(cb) {
+  if (cb.checked) {
+    countdown = 30;
+    tick();
+  } else {
+    clearTimeout(refreshTimer);
+    document.getElementById('refresh-countdown').textContent = '';
+  }
+}
+
+function tick() {
+  document.getElementById('refresh-countdown').textContent = `Refreshing in ${countdown}s`;
+  if (countdown <= 0) { window.location.href = "{{ url_for('scan') }}"; return; }
+  countdown--;
+  refreshTimer = setTimeout(tick, 1000);
+}
+</script>
+{% endblock %}

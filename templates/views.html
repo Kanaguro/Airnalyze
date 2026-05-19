@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">SQL Views</div>
+    <div class="page-subtitle">Database views — v_device_counts &amp; v_device_status</div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-head"><span><i class="bi bi-bar-chart"></i>v_device_counts</span><span style="color:var(--text3);font-size:.7rem;">COUNT summary</span></div>
+  <table>
+    <thead><tr><th>Blocked</th><th>Trusted</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blocked">{{ device_counts.blocked or 0 }}</span></td>
+        <td><span class="badge badge-trusted">{{ device_counts.trusted or 0 }}</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-head"><span><i class="bi bi-table"></i>v_device_status</span><span style="color:var(--text3);font-size:.7rem;">UNION of blacklist + whitelist</span></div>
+  <table>
+    <thead><tr><th>MAC Address</th><th>Device Name</th><th>IP Address</th><th>Signal</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for d in device_status %}
+      <tr>
+        <td class="td-mono">{{ d.mac_address }}</td>
+        <td>{{ d.device_name or '—' }}</td>
+        <td class="td-ip">{{ d.ip_address or '—' }}</td>
+        <td style="color:var(--text2);font-family:var(--mono);font-size:.75rem;">{{ d.signal_strength or '—' }}</td>
+        <td>
+          {% if d.status == 'Blocked' %}<span class="badge badge-blocked">Blocked</span>
+          {% else %}<span class="badge badge-trusted">Trusted</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5"><div class="empty-state"><i class="bi bi-table"></i>No blocked or trusted devices yet</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

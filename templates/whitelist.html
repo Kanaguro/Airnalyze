@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Whitelist</div>
+    <div class="page-subtitle">Trusted devices on this network</div>
+  </div>
+</div>
+<div class="card">
+  <table>
+    <thead><tr><th>MAC Address</th><th>Device Name</th><th>IP Address</th><th>Signal</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for d in devices %}
+      <tr>
+        <td class="td-mono">{{ d.mac_address }}</td>
+        <td>{{ d.device_name or 'Unknown' }}</td>
+        <td class="td-ip">{{ d.ip_address or '—' }}</td>
+        <td style="color:var(--text2);font-family:var(--mono);font-size:.75rem;">{{ d.signal_strength or '—' }}</td>
+        <td>
+          <a href="{{ url_for('untrust_device', mac=d.mac_address) }}" class="btn btn-outline btn-sm">
+            <i class="bi bi-x-circle"></i> Remove
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5"><div class="empty-state"><i class="bi bi-patch-check"></i>No trusted devices</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

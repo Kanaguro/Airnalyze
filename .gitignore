@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+wifi_monitor.db
+.env
+venv/
+.DS_Store

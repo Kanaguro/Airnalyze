@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Account</div>
+    <div class="page-subtitle">Manage your account details</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:18px;align-items:start;">
+
+  <!-- Details -->
+  <div class="card">
+    <div class="card-head"><span><i class="bi bi-person"></i>Account Details</span></div>
+    <table><tbody>
+      <tr><td style="color:var(--text2);font-family:var(--mono);font-size:.72rem;width:120px;padding:11px 14px;">USERNAME</td><td style="padding:11px 14px;">{{ user.username }}</td></tr>
+      <tr><td style="color:var(--text2);font-family:var(--mono);font-size:.72rem;padding:11px 14px;">TYPE</td>
+        <td style="padding:11px 14px;">
+          {% if user.account_type == 'admin' %}<span class="badge badge-admin">Admin</span>
+          {% else %}<span class="badge badge-guest">Guest</span>{% endif %}
+        </td>
+      </tr>
+      <tr><td style="color:var(--text2);font-family:var(--mono);font-size:.72rem;padding:11px 14px;">USER ID</td>
+        <td style="padding:11px 14px;"><code style="font-size:.7rem;word-break:break-all;">{{ user.user_id }}</code></td>
+      </tr>
+    </tbody></table>
+  </div>
+
+  <!-- Right column -->
+  <div style="display:flex;flex-direction:column;gap:18px;">
+
+    <!-- Change Username -->
+    <div class="card">
+      <div class="card-head"><span><i class="bi bi-pencil"></i>Change Username</span></div>
+      <div class="p-4">
+        <form method="POST">
+          <input type="hidden" name="action" value="change_username">
+          <div class="mb-3">
+            <label class="form-label">New Username</label>
+            <input type="text" name="new_username" class="form-control" value="{{ user.username }}" required>
+          </div>
+          <button class="btn btn-primary btn-sm"><i class="bi bi-check2"></i> Update</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card">
+      <div class="card-head"><span><i class="bi bi-key"></i>Change Password</span></div>
+      <div class="p-4">
+        <form method="POST">
+          <input type="hidden" name="action" value="change_password">
+          <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <div class="pw-wrap">
+              <input type="password" name="current_password" class="form-control" required>
+              <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <div class="pw-wrap">
+              <input type="password" name="new_password" class="form-control" required>
+              <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm New Password</label>
+            <div class="pw-wrap">
+              <input type="password" name="confirm_password" class="form-control" required>
+              <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm"><i class="bi bi-check2"></i> Update Password</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Account -->
+<div class="card border-danger" style="margin-top:18px;">
+  <div class="card-head" style="color:var(--red);"><span><i class="bi bi-trash"></i>Delete Account</span></div>
+  <div class="p-4">
+    <p class="text-sm text-muted mb-3">This is permanent and cannot be undone. Type <strong style="color:var(--text);">{{ user.username }}</strong> to confirm.</p>
+    <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('Permanently delete your account?')" style="display:flex;gap:10px;align-items:flex-end;">
+      <div style="flex:1;max-width:260px;">
+        <label class="form-label">Confirm username</label>
+        <input type="text" name="confirm_delete" class="form-control" placeholder="{{ user.username }}" required>
+      </div>
+      <button class="btn btn-danger"><i class="bi bi-trash"></i> Delete Account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

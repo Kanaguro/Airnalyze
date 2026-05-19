@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block unauth_content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo"><i class="bi bi-broadcast"></i></div>
+      <div class="login-title">Airnalyze</div>
+      <div class="login-sub">Network Analytics</div>
+    </div>
+    <div class="login-body">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" form="login-form" class="form-control" autofocus autocomplete="off">
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <div class="pw-wrap">
+          <input type="password" name="password" form="login-form" class="form-control">
+          <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+      <form id="login-form" method="POST">
+        <button class="btn btn-primary w-100"><i class="bi bi-arrow-right-circle"></i> Sign In</button>
+      </form>
+      <p class="text-sm text-muted mt-3" style="text-align:center;">
+        No account? <a href="{{ url_for('register') }}" style="color:var(--accent);">Create an account</a>
+      </p>
+    </div>
+    <div class="login-foot">Secure access only — unauthorized use prohibited</div>
+  </div>
+</div>
+{% endblock %}

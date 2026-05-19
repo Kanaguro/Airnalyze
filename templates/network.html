@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Network</div>
+    <div class="page-subtitle">Auto-detected network information</div>
+  </div>
+  <a href="{{ url_for('network_refresh') }}" class="btn btn-outline"><i class="bi bi-arrow-clockwise"></i> Refresh</a>
+</div>
+<div class="card">
+  <div class="net-info" style="grid-template-columns: repeat(2,1fr);">
+    <div class="net-info-item">
+      <div class="net-info-label">SSID</div>
+      <div class="net-info-val">{{ network.ssid }}</div>
+    </div>
+    <div class="net-info-item">
+      <div class="net-info-label">Gateway IP</div>
+      <div class="net-info-val" style="font-family:var(--mono);">{{ network.gateway }}</div>
+    </div>
+    <div class="net-info-item" style="border-top:1px solid var(--border);">
+      <div class="net-info-label">Router Name</div>
+      <div class="net-info-val">{{ network.name }}</div>
+    </div>
+    <div class="net-info-item" style="border-top:1px solid var(--border);">
+      <div class="net-info-label">MAC Address</div>
+      <div class="net-info-val" style="font-family:var(--mono);font-size:.82rem;">{{ network.mac }}</div>
+    </div>
+  </div>
+</div>
+<p class="text-sm text-muted mt-3">Network details are automatically detected from your machine. Click Refresh to re-detect.</p>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-header">
+  <div><div class="page-title">Dashboard</div><div class="page-subtitle">Network overview &amp; device status</div></div>
+  <a href="{{ url_for('scan') }}" class="btn btn-primary"><i class="bi bi-radar"></i> Scan Network</a>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon"><i class="bi bi-hdd-network"></i></div>
+    <div class="stat-num">{{ devices|length }}</div>
+    <div class="stat-label">Active Devices</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-icon"><i class="bi bi-slash-circle"></i></div>
+    <div class="stat-num">{{ blacklist|length }}</div>
+    <div class="stat-label">Blacklisted</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon"><i class="bi bi-patch-check"></i></div>
+    <div class="stat-num">{{ whitelist|length }}</div>
+    <div class="stat-label">Trusted</div>
+  </div>
+  <div class="stat-card yellow">
+    <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+    <div class="stat-num">{{ scan_logs|length }}</div>
+    <div class="stat-label">Recent Scans</div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:18px;">
+  <div class="card-head"><span><i class="bi bi-router"></i>Active Network</span></div>
+  <div class="net-info">
+    <div class="net-info-item"><div class="net-info-label">SSID</div><div class="net-info-val">{{ network.ssid }}</div></div>
+    <div class="net-info-item"><div class="net-info-label">Gateway IP</div><div class="net-info-val" style="font-family:var(--mono);">{{ network.gateway }}</div></div>
+    <div class="net-info-item"><div class="net-info-label">Router</div><div class="net-info-val">{{ network.name }}</div></div>
+    <div class="net-info-item"><div class="net-info-label">MAC Address</div><div class="net-info-val" style="font-family:var(--mono);font-size:.8rem;">{{ network.mac }}</div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;">
+  <div class="card">
+    <div class="card-head"><span><i class="bi bi-hdd-network"></i>Recent Devices</span><a href="{{ url_for('devices') }}" class="btn btn-outline btn-sm">View All</a></div>
+    <table>
+      <thead><tr><th>MAC</th><th>Device Name</th><th>IP</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for d in devices[:5] %}
+        <tr>
+          <td class="td-mono">{{ d.mac_address }}</td>
+          <td>{{ d.device_name or '—' }}</td>
+          <td class="td-ip">{{ d.ip_address or '—' }}</td>
+          <td><span class="badge badge-active">Active</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4"><div class="empty-state"><i class="bi bi-radar"></i>No devices — run a scan</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span><i class="bi bi-clock-history"></i>Scan History</span><a href="{{ url_for('scan_history') }}" class="btn btn-outline btn-sm">View All</a></div>
+    <table>
+      <thead><tr><th>Time</th><th>Devices</th></tr></thead>
+      <tbody>
+        {% for log in scan_logs %}
+        <tr>
+          <td style="font-family:var(--mono);font-size:.75rem;color:var(--text2);">{{ log.scanned_at }}</td>
+          <td><span class="badge badge-active">{{ log.device_count }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="2"><div class="empty-state" style="padding:20px;"><i class="bi bi-clock-history"></i>No scans yet</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

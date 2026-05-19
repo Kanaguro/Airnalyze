@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block unauth_content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo"><i class="bi bi-person-plus"></i></div>
+      <div class="login-title">Create Account</div>
+      <div class="login-sub">Airnalyze — Register</div>
+    </div>
+    <div class="login-body">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password <span class="text-muted">(min 6 chars)</span></label>
+          <div class="pw-wrap">
+            <input type="password" name="password" class="form-control" required>
+            <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Confirm Password</label>
+          <div class="pw-wrap">
+            <input type="password" name="confirm" class="form-control" required>
+            <button type="button" class="pw-toggle" onclick="togglePW(this)"><i class="bi bi-eye"></i></button>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Account Type</label>
+          <div class="acct-type-select">
+            {% if not admin_exists %}
+            <label class="acct-option">
+              <input type="radio" name="account_type" value="admin" checked>
+              <div class="acct-card">
+                <div class="acct-icon admin"><i class="bi bi-shield-fill"></i></div>
+                <div class="acct-info">
+                  <div class="acct-name">Admin</div>
+                  <div class="acct-desc">Full system access</div>
+                </div>
+                <div class="acct-check"><i class="bi bi-check-circle-fill"></i></div>
+              </div>
+            </label>
+            {% else %}
+            <div class="acct-card locked">
+              <div class="acct-icon admin"><i class="bi bi-shield-fill"></i></div>
+              <div class="acct-info">
+                <div class="acct-name">Admin <span class="locked-tag">Locked</span></div>
+                <div class="acct-desc">An admin account already exists</div>
+              </div>
+              <div class="acct-check muted"><i class="bi bi-lock-fill"></i></div>
+            </div>
+            {% endif %}
+            <label class="acct-option">
+              <input type="radio" name="account_type" value="guest" {{ 'checked' if admin_exists }}>
+              <div class="acct-card">
+                <div class="acct-icon guest"><i class="bi bi-person-fill"></i></div>
+                <div class="acct-info">
+                  <div class="acct-name">Guest</div>
+                  <div class="acct-desc">Limited view access</div>
+                </div>
+                <div class="acct-check"><i class="bi bi-check-circle-fill"></i></div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-primary w-100"><i class="bi bi-person-check"></i> Create Account</button>
+      </form>
+      <p class="text-sm text-muted mt-3" style="text-align:center;">
+        Already have an account? <a href="{{ url_for('login') }}" style="color:var(--accent);">Sign in</a>
+      </p>
+    </div>
+    <div class="login-foot">First registered account becomes the system administrator</div>
+  </div>
+</div>
+
+<style>
+  .acct-type-select { display: flex; flex-direction: column; gap: 8px; }
+
+  .acct-option { cursor: pointer; }
+  .acct-option input[type="radio"] { display: none; }
+
+  .acct-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    background: var(--bg);
+    transition: all .15s;
+    cursor: pointer;
+  }
+
+  .acct-option input:checked + .acct-card {
+    border-color: var(--accent);
+    background: var(--accent-lo);
+  }
+
+  .acct-card.locked {
+    opacity: .5;
+    cursor: not-allowed;
+    border-color: var(--border);
+  }
+
+  .acct-icon {
+    width: 34px; height: 34px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+  }
+
+  .acct-icon.admin { background: var(--accent-lo); color: var(--accent); }
+  .acct-icon.guest { background: var(--green-lo);  color: var(--green); }
+
+  .acct-info { flex: 1; }
+  .acct-name { font-size: .85rem; font-weight: 500; color: var(--text); }
+  .acct-desc { font-size: .72rem; color: var(--text2); font-family: var(--mono); margin-top: 1px; }
+
+  .locked-tag {
+    display: inline-block;
+    font-size: .62rem;
+    background: var(--red-lo);
+    color: var(--red);
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: 5px;
+    font-family: var(--mono);
+    vertical-align: middle;
+  }
+
+  .acct-check { color: var(--text3); font-size: .9rem; }
+  .acct-check.muted { color: var(--text3); }
+  .acct-option input:checked + .acct-card .acct-check { color: var(--accent); }
+</style>
+{% endblock %}
